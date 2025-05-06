@@ -40,7 +40,7 @@ def overwrite_file(filename,lines):
         
 # Auto generate Account Numbers
 def generate_account_number():
-    Start_Account_number = 10000
+    Start_Account_number = 10001
     for line in read_file(Account_File):
         parts = line.split("|")
         if parts[0].isdigit():
@@ -50,7 +50,7 @@ def generate_account_number():
 # Password Verification
 def verify_password():
     while True:
-        customer_accountNo=input("Enter Your Deposit Account Number : ")
+        customer_accountNo=input("Enter Your Account Number : ")
         customer_id=None
 
         for line in read_file(Account_File):
@@ -184,7 +184,7 @@ def deposit_money():
             if customer_accountNo==customer_account:
                 new_balance=float(customer_balance)+deposit_amount
                 updated_line.append(f"{customer_accountNo}|{customer_id}|{new_balance}")
-                write_file(Transaction_File,f"{datetime.now()}| Deposit |{deposit_amount}|{customer_accountNo}|{customer_id}")
+                write_file(Transaction_File,f"{datetime.now()}| Deposit |{customer_id}|{customer_accountNo}|{deposit_amount}")
             else:
                 updated_line.append(line.strip())
 
@@ -193,80 +193,116 @@ def deposit_money():
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         
-deposit_money()
+# deposit_money()
 # print(read_file(Account_File))
 
+# withdraw function
+def withdraw_money():
+    try:
+        customer_accountNo, customer_id = verify_password()
+
+        updated_lines = [] 
+        for line in read_file(Account_File):
+            customer_account, customer_Id, customer_balance = line.strip().split("|")
+            if customer_accountNo == customer_account and customer_id == customer_Id:
+                while True :
+                    try:
+                        withdraw_amount = float(input("Enter your Withdraw Amount: "))
+                        if withdraw_amount <= 0:
+                            print("Invalid Amount. Please enter a positive number.")
+                            continue 
+                        if withdraw_amount > float(customer_balance):
+                            print("-----Insufficient funds 😞-----")
+                            continue
+                        new_balance = float(customer_balance) - withdraw_amount
+                        print(f"-----Withdrawal successful. Your new balance is Rs.{new_balance}.00-----")
+                        updated_lines.append(f"{customer_accountNo}|{customer_id}|{new_balance}")
+                        write_file(Transaction_File, f"{datetime.now()}| Withdraw |{customer_id}|{customer_accountNo}|{withdraw_amount}")
+                        break
+                    except ValueError:
+                        print("Invalid amount. Please enter a valid number.") 
+            else:
+                updated_lines.append(line.strip())
+
+        overwrite_file(Account_File, updated_lines)
+        print(f"--------Withdraw Amount Rs.{withdraw_amount} Successfully Withdrawn from your Account.--------")
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+withdraw_money()
 
 
 
 #-------------Menus.--------------
 # commen menue
-# def commen_menu():
-#     print("----------Welcome to our Mini Banking System----------")
-#     print("01.Admin Login")
-#     print("02.Customer Login")
-#     print("03.Exit")
-#     choose=int(input("Choose Your Choise (between 1 to 3) :"))
-#     if choose==1:
-#         admin_login()
-#     elif choose==2:
-#         customer_login()
-#     elif choose==3:
-#         print("-----Thankyou for Using our Bank 🫡.------")
-#         exit()
-#     else:
-#         print("-----I already Told you to choose the number between 1 to 3 🤬-----")
+def commen_menu():
+    print("----------Welcome to our Mini Banking System----------")
+    print("01.Admin Login")
+    print("02.Customer Login")
+    print("03.Exit")
+    choose=int(input("Choose Your Choise (between 1 to 3) :"))
+    if choose==1 and admin_login():
+        admin_menu()
+    elif choose==2 and customer_login():
+        print("hi")
+        # customer_menu()
+    elif choose==3:
+        print("-----Thankyou for Using our Bank 🫡.------")
+        exit()
+    else:
+        print("-----I already Told you to choose the number between 1 to 3 🤬-----")
 
-# commen_menu()
+
 
 # Main Menu
 
-# def admin_menu():
-#     while True:
-#         if user_name:
-#             print(f'------------Welcome to our Bank Mr/Mrs.{user_name}!😊------------')
-#         else:
-#             print("------------ Welcome to the Bank! ------------")
-#         print("--------What do you want to do?---------")
-#         print("01.User Creation.")
-#         print("02.Account Creation.")
-#         print("03.Deposit Money.")
-#         print("04.Withdraw Money.")
-#         print("05.view Transactions.")
-#         print("06.Update User.")
-#         print("07.Delete User.")
-#         print("08.View User Details.")        
-#         print("09.Exit.")
-#         choose_option=int(input("Enter the option (The number must be positive and 1 to 5) :")) 
-#         if choose_option==1:
-#             print("--------You can Create New User Now 😊.--------")
-#             break
-#         elif choose_option==2:
-#             print("--------You can Create Your Account Now 😊.--------")
-#         elif choose_option==3:
-#             print("You can Deposit the Money now")
-#         elif choose_option==4:
-#             print("You can Withdraw the Money now")
-#         elif choose_option==5:
-#             print("You Can View Transaction.")
-#         elif choose_option==6:
-#             print("You can Update a User Now.")
-#         elif choose_option==7:
-#             print("You can Delete a User Now.")
-#         elif choose_option==8:
-#             print("You can Update the User Now.")
-#         elif choose_option==9:
-#             print("Thank you")
-#             exit()
-#         else:
-#             print("I already told you. You must Enter the positive number and between 1 to 6 😡")
+def admin_menu():
+    print("--------------Admin Menu---------------")
+    while True:
+        print("--------What do you want to do?---------")
+        print("01.User Creation.")
+        print("02.Account Creation.")
+        print("03.Deposit Money.")
+        print("04.Withdraw Money.")
+        print("05.view Transactions.")
+        print("06.Update User.")
+        print("07.Delete User.")
+        print("08.View User Details.")        
+        print("09.Exit.")
+        choose_option=int(input("Enter the option (The number must be positive and 1 to 5) :")) 
+        if choose_option==1:
+            print("--------You can Create New User Now 😊.--------")
+            create_customer()
+            break
+        elif choose_option==2:
+            print("--------You can Create Your Account Now 😊.--------")
+            account_create()
+        elif choose_option==3:
+            print("You can Deposit the Money now")
+            deposit_money()
+        elif choose_option==4:
+            print("You can Withdraw the Money now")
+            withdraw_money()
+        elif choose_option==5:
+            print("You Can View Transaction.")
+        elif choose_option==6:
+            print("You can Update a User Now.")
+        elif choose_option==7:
+            print("You can Delete a User Now.")
+        elif choose_option==8:
+            print("You can Update the User Now.")
+        elif choose_option==9:
+            print("Thank you")
+            exit()
+        else:
+            print("I already told you. You must Enter the positive number and between 1 to 6 😡")
        
 
 
 # def customer_menu():
 #     while True:
-#         if customer_username:
-#             print(f'------------Welcome to our Bank Mr/Mrs.{customer_username}!😊------------')
+#         if customer_name:
+#             print(f'------------Welcome to our Bank Mr/Mrs.{customer_name}!😊------------')
 #         else:
 #             print("------------ Welcome to the Bank! ------------")
 
@@ -291,3 +327,4 @@ deposit_money()
 #             exit()
 #         else:
 #             print("I already told you. You must Enter the positive number and between 1 to 6 😡")
+# commen_menu()
