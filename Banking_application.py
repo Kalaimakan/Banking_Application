@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
+from tabulate import tabulate
 max_attempts=3
+
 #-------------File Paths.--------------
 Admin_File="admin.txt"
 Customer_File="customers.txt"
@@ -27,7 +29,7 @@ def read_file(filename):
                 lines.append(line)
     return lines
 
-# read_file(Admin_File)
+# ----read_file(Admin_File)
 
 def write_file(filename,data):
     with open(filename,"a") as f:
@@ -38,7 +40,7 @@ def overwrite_file(filename,lines):
     with open(filename,"w") as f:
         f.write('\n'.join(lines)+'\n')
         
-# Auto generate Account Numbers
+# ----Auto generate Account Numbers
 def generate_account_number():
     Start_Account_number = 10001
     for line in read_file(Account_File):
@@ -46,8 +48,19 @@ def generate_account_number():
         if parts[0].isdigit():
             Start_Account_number = int(parts[0]) + 1
     return Start_Account_number
+generate_account_number()
+# ----Auto generate customer Id.
+def generate_customer_Id():
+    start_customer_id=1001
+    for line in read_file(Customer_File):
+        parts=line.split("|")
+        if parts[0].isdigit():
+            start_customer_id=int(parts[0])+1
+    return start_customer_id     
+generate_customer_Id()
 
-# Password Verification
+
+# ----Password Verification
 def verify_password():
     while True:
         customer_accountNo=input("Enter Your Account Number : ")
@@ -86,7 +99,7 @@ def admin_login():
         print("Incorrect Password. Access Denied.")
 # admin_login()
 
-# Customer login
+# ----Customer login
 def customer_login():
     attempt=0
     while attempt<max_attempts:
@@ -108,11 +121,11 @@ def customer_login():
 # customer_login()
 
 #-------------Admin Functions--------------
-# Customer Creation.??????????????????????????????????????????????
+# ----Customer Creation.
 def create_customer():
     customer_name = input("Enter Customer Name : ")
     while True:
-        customer_id = input("Enter Customer User ID (Ex: 1000) : ")
+        customer_id = generate_customer_Id()
         id_exists=False
         for line in read_file(Customer_File):
             if line.split("|")[0] == customer_id:
@@ -129,7 +142,7 @@ def create_customer():
     print(f"-----{customer_name}'s User Successfully Created 😊.-----")
 # create_customer()
 
-# Account Createation???????????????????????????????????????????????????
+# ----Account Createation.
 def account_create():
     # customer_accountNo=input("Enter Customer Account Number : ")
     customer_accountNo=generate_account_number()
@@ -162,9 +175,70 @@ def account_create():
 # account_create()
 
 
+# ----Update customer.
+def update_coustomer():
+    customer_id=input("Enter your Customer Id To Update : ")
+    name_updated=None
+    updated_line=[]
+    for line in read_file(Customer_File):
+        parts=line.split("|")
+        if parts[0]==customer_id:
+            new_name=input("Enter your New Name : ")
+            new_Password=input("Enter your New Password : ")
+            new_email=input("Enter your New Email : ")
+            updated_line.append(f"{customer_id}|{new_name}|{new_email}|{new_Password}")
+            name_updated=new_name
+            print([customer_id , new_name , new_email , new_Password])
+        else:
+            updated_line.append(line)
+
+    if name_updated:
+        overwrite_file(Customer_File,updated_line)
+        print(f"---------Your Details Are Updated {new_name}!--------")
+    else:
+        print("User Not Found.")
+# update_coustomer()
+
+#----Delete Customer.
+def delete_customer():
+    customer_id=input("Enter the Customer Id : ")
+    customer=[]
+    account=[]
+    for line in read_file(Customer_File):
+        customer_na=line.split("|")[1]
+        if line.split("|")[0]!=customer_id:
+            customer.append(line)
+    overwrite_file(Customer_File,customer)
+
+    for line in read_file(Account_File):
+        if line.split("|")[1]!=customer_id:
+            account.append(line)
+    overwrite_file(Account_File,account)
+    print(f"--------User {customer_na} and {customer_na}'s Account have been Deleted.--------")
+# delete_customer()
+
+#-----View User Details
+def view_user_details():
+    # print("--------All Customers.--------")
+    # print(f"{'Customer ID':<15}{'Name':<15}{'Email':<23}{'Password':<20}")
+    # print("-" * 85)
+    # for line in read_file(Customer_File):
+    #     customer_id, name, email, password = line.strip().split("|")
+    #     print(f"{customer_id:<15}{name:<15}{email:<23}{password:<20}")
+
+    print("--------All Customers.--------")
+    data=[]
+    for line in read_file(Customer_File):
+        parts= line.strip().split("|")
+        data.append(parts)
+
+    headers=["Customer ID", "Name", "Email", "Password"]
+    print(tabulate(data, headers=headers, tablefmt="fancy_grid",colalign=("left", "left", "left", "left")))
+# view_user_details()
+
 
 #-------------Commen Function.--------------
-# Deposit Function
+# ----Deposit Function.
 def deposit_money():
     try:
         customer_accountNo,customer_id=verify_password()
@@ -176,7 +250,6 @@ def deposit_money():
         except ValueError:
             print("Invalid amount. Please enter a valid number.")
             return
-
         updated_line=[]
         for line in read_file(Account_File):
             customer_account=line.split("|")[0]
@@ -187,7 +260,6 @@ def deposit_money():
                 write_file(Transaction_File,f"{datetime.now()}| Deposit |{customer_id}|{customer_accountNo}|{deposit_amount}")
             else:
                 updated_line.append(line.strip())
-
         overwrite_file(Account_File,updated_line)
         print(f"--------Deposit Amount Rs.{deposit_amount}.00 Successfully added your Account.---------")
     except Exception as e:
@@ -196,7 +268,7 @@ def deposit_money():
 # deposit_money()
 # print(read_file(Account_File))
 
-# withdraw function
+# ----withdraw function.
 def withdraw_money():
     try:
         customer_accountNo, customer_id = verify_password()
@@ -229,33 +301,20 @@ def withdraw_money():
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
-withdraw_money()
+# withdraw_money()
 
-
+# ----View My Transaction History
+def view_transaction():
+    customer_accountNo,customer_id=verify_password()
+    print("--------Your Transaction History.--------")
+    for line in read_file(Transaction_File):
+        if customer_id in line:
+            print(line)
+# view_transaction()
 
 #-------------Menus.--------------
-# commen menue
-def commen_menu():
-    print("----------Welcome to our Mini Banking System----------")
-    print("01.Admin Login")
-    print("02.Customer Login")
-    print("03.Exit")
-    choose=int(input("Choose Your Choise (between 1 to 3) :"))
-    if choose==1 and admin_login():
-        admin_menu()
-    elif choose==2 and customer_login():
-        print("hi")
-        # customer_menu()
-    elif choose==3:
-        print("-----Thankyou for Using our Bank 🫡.------")
-        exit()
-    else:
-        print("-----I already Told you to choose the number between 1 to 3 🤬-----")
 
-
-
-# Main Menu
-
+# Admin Menu
 def admin_menu():
     print("--------------Admin Menu---------------")
     while True:
@@ -269,11 +328,10 @@ def admin_menu():
         print("07.Delete User.")
         print("08.View User Details.")        
         print("09.Exit.")
-        choose_option=int(input("Enter the option (The number must be positive and 1 to 5) :")) 
+        choose_option=int(input("Enter the option (The number must be positive and 1 to 9) :")) 
         if choose_option==1:
             print("--------You can Create New User Now 😊.--------")
             create_customer()
-            break
         elif choose_option==2:
             print("--------You can Create Your Account Now 😊.--------")
             account_create()
@@ -285,20 +343,22 @@ def admin_menu():
             withdraw_money()
         elif choose_option==5:
             print("You Can View Transaction.")
+            view_transaction()
         elif choose_option==6:
             print("You can Update a User Now.")
+            update_coustomer()
         elif choose_option==7:
             print("You can Delete a User Now.")
+            delete_customer()
         elif choose_option==8:
-            print("You can Update the User Now.")
+            view_user_details()
         elif choose_option==9:
             print("Thank you")
-            exit()
+            commen_menu()
         else:
-            print("I already told you. You must Enter the positive number and between 1 to 6 😡")
+            print("I already told you. You must Enter the positive number and between 1 to 9 😡")
        
-
-
+# Customer Menu
 # def customer_menu():
 #     while True:
 #         if customer_name:
@@ -327,4 +387,25 @@ def admin_menu():
 #             exit()
 #         else:
 #             print("I already told you. You must Enter the positive number and between 1 to 6 😡")
-# commen_menu()
+
+
+# commen menue
+def commen_menu():
+    print("----------Welcome to our Mini Banking System----------")
+    print("01.Admin Login")
+    print("02.Customer Login")
+    print("03.Exit")
+    choose=int(input("Choose Your Choise (between 1 to 3) :"))
+    if choose==1 and admin_login():
+        admin_menu()
+        return
+    elif choose==2 and customer_login():
+        print("hi")
+        customer_menu()
+    elif choose==3:
+        print("-----Thankyou for Using our Bank 🫡.------")
+        exit()
+    else:
+        print("-----I already Told you to choose the number between 1 to 3 🤬-----")
+
+commen_menu()
