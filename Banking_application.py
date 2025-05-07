@@ -234,7 +234,7 @@ def view_user_details():
 
     headers=["Customer ID", "Name", "Email", "Password"]
     print(tabulate(data, headers=headers, tablefmt="fancy_grid",colalign=("left", "left", "left", "left")))
-# view_user_details()
+view_user_details()
 
 
 #-------------Commen Function.--------------
@@ -359,34 +359,34 @@ def admin_menu():
             print("I already told you. You must Enter the positive number and between 1 to 9 😡")
        
 # Customer Menu
-# def customer_menu():
-#     while True:
-#         if customer_name:
-#             print(f'------------Welcome to our Bank Mr/Mrs.{customer_name}!😊------------')
-#         else:
-#             print("------------ Welcome to the Bank! ------------")
+def customer_menu():
+    while True:
+        if customer_name:
+            print(f'------------Welcome to our Bank Mr/Mrs.{customer_name}!😊------------')
+        else:
+            print("------------ Welcome to the Bank! ------------")
 
-#         print("01.Deposit Money.")
-#         print("02.Withdraw Money.")
-#         print("03.Check Balance.")
-#         print("04.Transaction History.")
-#         print("05.Exit.")
+        print("01.Deposit Money.")
+        print("02.Withdraw Money.")
+        print("03.Check Balance.")
+        print("04.Transaction History.")
+        print("05.Exit.")
 
-#         choose_option=int(input("Enter the option (The number must be positive and 1 to 6) :")) 
+        choose_option=int(input("Enter the option (The number must be positive and 1 to 6) :")) 
 
-#         if choose_option==1:
-#             deposit_money()
-#         elif choose_option==2:
-#             withdraw_money()
-#         elif choose_option==3:
-#             print(f'Your Current Balance is Rs.{Account_balance}.00')
-#         elif choose_option==4:
-#             print('i will do it in 3 or 4 Days.🤣🤣')
-#         elif choose_option==5:
-#             print(f'Thank you for Choosing Our Bank {user_name}🫡')
-#             exit()
-#         else:
-#             print("I already told you. You must Enter the positive number and between 1 to 6 😡")
+        if choose_option==1:
+            deposit_money()
+        elif choose_option==2:
+            withdraw_money()
+        elif choose_option==3:
+            print(f'Your Current Balance is Rs.{Account_balance}.00')
+        elif choose_option==4:
+            print('i will do it in 3 or 4 Days.🤣🤣')
+        elif choose_option==5:
+            print(f'Thank you for Choosing Our Bank {user_name}🫡')
+            exit()
+        else:
+            print("I already told you. You must Enter the positive number and between 1 to 6 😡")
 
 
 # commen menue
@@ -401,7 +401,7 @@ def commen_menu():
         return
     elif choose==2 and customer_login():
         print("hi")
-        customer_menu()
+        # customer_menu()
     elif choose==3:
         print("-----Thankyou for Using our Bank 🫡.------")
         exit()
