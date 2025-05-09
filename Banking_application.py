@@ -108,6 +108,7 @@ def admin_login():
 
 # ----Customer login
 def customer_login():
+    global Customer_Account_Number
     attempt=0
     while attempt<max_attempts:
         customer_id=input("Enter Your Id : ")
@@ -116,7 +117,13 @@ def customer_login():
             parts=line.strip().split("  |  ")
             if  parts[1]==customer_id and parts[-1]==Customer_password:
                 print("-----Login Successful. You are Good to Go 😊-----")
+                for line in get_file_contents(Account_File):
+                    parts=line.strip().split("  |  ")
+                    Customer_Account_Number=line.strip().split("  |  ")[1]
+                    if customer_id == parts[-2]:
+                        return Customer_Account_Number
                 return True
+            
         attempt+=1
         left_attempts=max_attempts-attempt
         if left_attempts>0:
@@ -172,11 +179,11 @@ def account_create():
             if line.strip().split("  |  ")[2] == customer_id:
                 print("-----Customer already has an account. Only one account is allowed.-----")
                 already_has_account = True
-                break
+                continue
         if already_has_account:
-            return  
+            continue  
         else:
-            break 
+            break
     customer_initial_balance=float(input("Enter Customer Initial Balance :"))
     data=f"{datetime.now()}  |  {customer_accountNo}  |  {customer_id}  |  {customer_initial_balance}"
     save_to_file(Account_File,data)
@@ -188,6 +195,7 @@ def account_create():
 
 # ----Update customer.
 def update_coustomer():
+    print("--------Please Fill all Details--------")
     customer_id=input("Enter your Customer Id To Update : ")
     name_updated=None
     updated_line=[]
@@ -243,7 +251,7 @@ def view_user_details():
         parts= line.strip().split("  |  ")
         data.append(parts)
 
-    headers=["Customer ID", "Name", "Email", "Password"]
+    headers=["Created Date adn Time","Customer ID", "Name", "Email", "Password"]
     print(tabulate(data, headers=headers, tablefmt="fancy_grid",colalign=("left", "left", "left", "left")))
 # view_user_details()
 
@@ -263,16 +271,17 @@ def deposit_money():
             return
         updated_line=[]
         for line in get_file_contents(Account_File):
-            customer_account=line.strip().split("  |  ")[1]
-            customer_balance=line.strip().split("  |  ")[-1]
-            if customer_accountNo==customer_account:
-                new_balance=float(customer_balance)+deposit_amount
+            parts=line.strip().split("  |  ")
+            if customer_accountNo==parts[1]:
+                new_balance=float(parts[-1])+deposit_amount
                 updated_line.append(f"{datetime.now()}  |  {customer_accountNo}  |  {customer_id}  |  {new_balance}")
                 save_to_file(Transaction_File,f"{datetime.now()}  |  Deposit  |  {customer_id}  |  {customer_accountNo}  |  {deposit_amount}")
             else:
                 updated_line.append(line.strip())
         overwrite_file(Account_File,updated_line)
         print(f"--------Deposit Amount Rs.{deposit_amount}.00 Successfully added your Account.---------")
+        print(f"--------Now Your Balance is Rs.{new_balance}.00-----")
+
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
         
@@ -287,18 +296,19 @@ def withdraw_money():
         updated_lines = [] 
         for line in get_file_contents(Account_File):
             parts = line.strip().split("  |  ")
-            if customer_accountNo == parts[1] and customer_id == customer_Id:
+            if customer_accountNo == parts[1] and customer_id == parts[-2]:
                 while True :
                     try:
                         withdraw_amount = float(input("Enter your Withdraw Amount: "))
                         if withdraw_amount <= 0:
                             print("Invalid Amount. Please enter a positive number.")
                             continue 
-                        if withdraw_amount > float(customer_balance):
+                        if withdraw_amount > float(parts[-1]):
                             print("-----Insufficient funds 😞-----")
                             continue
-                        new_balance = float(customer_balance) - withdraw_amount
-                        print(f"-----Withdrawal successful. Your new balance is Rs.{new_balance}.00-----")
+                        new_balance = float(parts[-1]) - withdraw_amount
+                        print(f"--------Withdraw Amount Rs.{withdraw_amount} Successfully Withdrawn from your Account.--------")
+                        print(f"--------Now Your Balance is Rs.{new_balance}.00-----")
                         updated_lines.append(f"{datetime.now()}  |  {customer_accountNo}  |  {customer_id}  |  {new_balance}")
                         save_to_file(Transaction_File, f"{datetime.now()}  |  Withdraw  |  {customer_id}  |  {customer_accountNo}  |  {withdraw_amount}")
                         break
@@ -308,7 +318,6 @@ def withdraw_money():
                 updated_lines.append(line.strip())
 
         overwrite_file(Account_File, updated_lines)
-        print(f"--------Withdraw Amount Rs.{withdraw_amount} Successfully Withdrawn from your Account.--------")
 
     except Exception as e:
         print(f"------Account not found------")
@@ -325,20 +334,21 @@ def view_transaction():
 
 #-------------Customer Functions.--------------
 def check_balance():
-    while True:
-        try:
-            Account_no=input("Enter Your Account No : ")
+    try:
+        while True:
+            # Account_no=input("Enter Your Account No : ")
             for line in get_file_contents(Account_File):
-                account_no,customer_id,Account_balance=line.split("  |  ")
-                if Account_no==account_no:
+                account_no=line.split("  |  ")[1]
+                Account_balance=line.split("  |  ")[-1]
+                if Customer_Account_Number==account_no:
                     print(f'--------Your Current Balance is Rs.{Account_balance}.00--------')
                     return True
-            if int(Account_no)<0:
+            if int(Customer_Account_Number)<0:
                 print("----Enter positive Number.----")
             else:
                 print("----Account Not Found.----")
-        except ValueError:
-            print("----Enter Number only.----")
+    except ValueError:
+        print("----Enter Number only.----")
 
 # check_balance()
 #-------------Menus.--------------
@@ -371,7 +381,7 @@ def admin_menu():
             print("You can Withdraw the Money now")
             withdraw_money()
         elif choose_option==5:
-            print("You Can View Transaction.")
+            print("You Can View Transaction History.")
             view_transaction()
         elif choose_option==6:
             print("You can Update a User Now.")
@@ -426,8 +436,8 @@ def customer_menu():
 # customer_menu()
 # ----commen menue
 def commen_menu():
-    while True:
-        try:
+    # while True:
+        # try:
             print("----------Welcome to our Mini Banking System----------")
             print("01.Admin Login")
             print("02.Customer Login")
@@ -442,7 +452,7 @@ def commen_menu():
                 exit()
             else:
                 print("-----I already Told you to choose the number between 1 to 3 🤬-----")
-        except ValueError:
-            print("Enter Numbers only")
+        # except ValueError:
+        #     print("Enter Numbers only")
 
 commen_menu()
