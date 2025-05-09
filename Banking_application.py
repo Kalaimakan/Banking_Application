@@ -325,10 +325,11 @@ def withdraw_money():
 
 # ----View My Transaction History
 def view_transaction():
-    customer_accountNo,customer_id=verify_password()
+    # customer_accountNo,customer_id=verify_pass`word()
     print("--------Your Transaction History.--------")
     for line in get_file_contents(Transaction_File):
-        if customer_id in line:
+        parts=line.strip().split("  |  ")
+        if Customer_Account_Number == parts[-2] :
             print(line)
 # view_transaction()
 
