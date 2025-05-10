@@ -22,12 +22,15 @@ setup_files()
 
 #-------------function for read, write and overwrite files--------------
 def get_file_contents(filename):
-    lines=[]
+    # lines=[]
     with open(filename,"r") as f:
-        for line in f:
-            line=line.strip()
-            if line:
-                lines.append(line)
+        lines=f.readlines()
+
+
+        # for line in f:
+        #     line=line.strip()
+        #     if line:
+        #         lines.append(line)
     return lines
 
 # ----get_file_contents(Admin_File)
@@ -101,7 +104,7 @@ def admin_login():
 
         for line in get_file_contents(Admin_File):
             if line==f"{user_name}|{password}":
-                print("Login Successful")
+                print("---------Login Successful---------")
                 return True
         print("Incorrect Password. Access Denied.")
 # admin_login()
@@ -185,6 +188,7 @@ def account_create():
         else:
             break
     customer_initial_balance=float(input("Enter Customer Initial Balance :"))
+    save_to_file(Transaction_File,f"{datetime.now()}  |  Deposit  |  {customer_id}  |  {customer_accountNo}  |  {customer_initial_balance}")
     data=f"{datetime.now()}  |  {customer_accountNo}  |  {customer_id}  |  {customer_initial_balance}"
     save_to_file(Account_File,data)
     with open("account.txt","r") as account:
@@ -251,7 +255,7 @@ def view_user_details():
         parts= line.strip().split("  |  ")
         data.append(parts)
 
-    headers=["Created Date adn Time","Customer ID", "Name", "Email", "Password"]
+    headers=["Created Date and Time","Customer ID", "Name", "Email", "Password"]
     print(tabulate(data, headers=headers, tablefmt="fancy_grid",colalign=("left", "left", "left", "left")))
 # view_user_details()
 
@@ -323,15 +327,45 @@ def withdraw_money():
         print(f"------Account not found------")
 # withdraw_money()
 
-# ----View My Transaction History
-def view_transaction():
+# ----View Transaction History
+def admin_view_transaction():
     # customer_accountNo,customer_id=verify_pass`word()
-    print("--------Your Transaction History.--------")
-    for line in get_file_contents(Transaction_File):
-        parts=line.strip().split("  |  ")
-        if Customer_Account_Number == parts[-2] :
-            print(line)
-# view_transaction()
+    while True:
+        try:
+            headers=["Date and time","Transaction Type","Customer Id","Account Number","Amount"]
+            transaction=[]
+            account_number=int(input("Enter the Account Number : "))
+            lines=get_file_contents(Transaction_File)
+            for line in lines:
+                parts=line.strip().split("  |  ")
+                if account_number==int(parts[3]):
+                    transaction.append(parts)
+                    continue
+            if transaction:
+                print(tabulate(transaction, headers=headers, tablefmt="fancy_grid", colalign=("left", "left", "left", "left", "left")))
+            else:
+                print("No Transaction Found for this Account.")
+            break
+        except ValueError:
+            print("Enter Numbers Only")
+
+def customer_view_transaction():
+    try:
+        print("--------Your Transaction History.--------")
+        headers=["Date and time","Transaction Type","Customer Id","Account Number","Amount"]
+        transaction=[]
+        for line in get_file_contents(Transaction_File):
+            parts=line.strip().split("  |  ")
+            if Customer_Account_Number == parts[-2] :
+                transaction.append(parts)
+        if transaction:
+            print(tabulate(transaction, headers=headers, tablefmt="fancy_grid",colalign=("left", "left", "left", "left", "left")))
+        else:
+            print("No Transaction Found for this Account.")
+    except ValueError:
+        print("Enter Numbers Only")
+
+
 
 #-------------Customer Functions.--------------
 def check_balance():
@@ -339,10 +373,10 @@ def check_balance():
         while True:
             # Account_no=input("Enter Your Account No : ")
             for line in get_file_contents(Account_File):
-                account_no=line.split("  |  ")[1]
-                Account_balance=line.split("  |  ")[-1]
+                account_no=line.strip().split("  |  ")[1]
+                Account_balance=line.strip().split("  |  ")[-1]
                 if Customer_Account_Number==account_no:
-                    print(f'--------Your Current Balance is Rs.{Account_balance}.00--------')
+                    print(f'--------Your Current Balance is Rs.{Account_balance}0--------')
                     return True
             if int(Customer_Account_Number)<0:
                 print("----Enter positive Number.----")
@@ -383,7 +417,7 @@ def admin_menu():
             withdraw_money()
         elif choose_option==5:
             print("You Can View Transaction History.")
-            view_transaction()
+            admin_view_transaction()
         elif choose_option==6:
             print("You can Update a User Now.")
             update_coustomer()
@@ -427,9 +461,8 @@ def customer_menu():
         elif choose_option==3:
             check_balance()
         elif choose_option==4:
-            view_transaction()
+            customer_view_transaction()
         elif choose_option==5:
-            # print(f'Thank you for Choosing Our Bank {customer_name}🫡')
             commen_menu()
         else:
             print("I already told you. You must Enter the positive number and between 1 to 5 😡")
