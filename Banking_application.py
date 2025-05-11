@@ -22,15 +22,8 @@ setup_files()
 
 #-------------function for read, write and overwrite files--------------
 def get_file_contents(filename):
-    # lines=[]
     with open(filename,"r") as f:
         lines=f.readlines()
-
-
-        # for line in f:
-        #     line=line.strip()
-        #     if line:
-        #         lines.append(line)
     return lines
 
 # ----get_file_contents(Admin_File)
@@ -197,8 +190,8 @@ def account_create():
 # account_create()
 
 
-# ----Update customer.
-def update_coustomer():
+# ----Update customer. 
+def update_customer():    
     print("--------Please Fill all Details--------")
     customer_id=input("Enter your Customer Id To Update : ")
     name_updated=None
@@ -220,7 +213,7 @@ def update_coustomer():
         print(f"---------Your Details Are Updated {new_name}!--------")
     else:
         print("User Not Found.")
-# update_coustomer()
+# update_customer()
 
 #----Delete Customer.
 def delete_customer():
@@ -420,7 +413,7 @@ def admin_menu():
             admin_view_transaction()
         elif choose_option==6:
             print("You can Update a User Now.")
-            update_coustomer()
+            update_customer()
         elif choose_option==7:
             print("You can Delete a User Now.")
             delete_customer()
@@ -489,4 +482,4 @@ def commen_menu():
         # except ValueError:
         #     print("Enter Numbers only")
 
-commen_menu()
+# commen_menu()
