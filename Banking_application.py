@@ -57,7 +57,7 @@ def generate_customer_Id():
     start_customer_id=1001
     for line in get_file_contents(Customer_File):
         parts=line.strip().split("  |  ")
-        if parts[1].isdigit():
+        if int(parts[1]):
             start_customer_id=int(parts[1])+1
     return start_customer_id     
 generate_customer_Id()
@@ -190,8 +190,8 @@ def account_create():
 # account_create()
 
 
-# ----Update customer. 
-def update_customer():    
+# ----Update customer.
+def update_coustomer():
     print("--------Please Fill all Details--------")
     customer_id=input("Enter your Customer Id To Update : ")
     name_updated=None
@@ -202,7 +202,7 @@ def update_customer():
             new_name=input("Enter your New Name : ")
             new_Password=input("Enter your New Password : ")
             new_email=input("Enter your New Email : ")
-            updated_line.append(f"{datetime.now()}  |  {customer_id}  |  {new_name}  |  {new_email}  |  {new_Password}")
+            updated_line.append(f"{parts[0]}  |  {customer_id}  |  {new_name}  |  {new_email}  |  {new_Password}")
             name_updated=new_name
             print([customer_id , new_name , new_email , new_Password])
         else:
@@ -213,7 +213,7 @@ def update_customer():
         print(f"---------Your Details Are Updated {new_name}!--------")
     else:
         print("User Not Found.")
-# update_customer()
+# update_coustomer()
 
 #----Delete Customer.
 def delete_customer():
@@ -413,7 +413,7 @@ def admin_menu():
             admin_view_transaction()
         elif choose_option==6:
             print("You can Update a User Now.")
-            update_customer()
+            update_coustomer()
         elif choose_option==7:
             print("You can Delete a User Now.")
             delete_customer()
@@ -463,8 +463,8 @@ def customer_menu():
 # customer_menu()
 # ----commen menue
 def commen_menu():
-    # while True:
-        # try:
+    while True:
+        try:
             print("----------Welcome to our Mini Banking System----------")
             print("01.Admin Login")
             print("02.Customer Login")
@@ -479,7 +479,7 @@ def commen_menu():
                 exit()
             else:
                 print("-----I already Told you to choose the number between 1 to 3 🤬-----")
-        # except ValueError:
-        #     print("Enter Numbers only")
+        except ValueError:
+            print("Enter Numbers only")
 
-# commen_menu()
+commen_menu()
